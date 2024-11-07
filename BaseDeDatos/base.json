@@ -1,0 +1,14 @@
+{
+    "usuarios": [
+        {
+            "documentType": "DNI",
+            "documentNumber": "12345678",
+            "password": "password1"
+        },
+        {
+            "documentType": "LC",
+            "documentNumber": "87654321",
+            "password": "password2"
+        }
+    ]
+}
