@@ -14,35 +14,56 @@
         <h1>INTRANET DEL COLEGIO TÉCNICO No6 - CHACABUCO</h1>
         
         <div class="login-form">
-            <?php
-            // Incluir el archivo de conexión a la base de datos
-            include './BaseDeDatos/dbCon.php';
+        <?php
+// Incluir el archivo de conexión a la base de datos
+    include './BaseDeDatos/dbCon.php';
 
-            if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                $documentType = $_POST['documentType'];
-                $documentNumber = $_POST['documentNumber'];
-                $password = $_POST['password'];
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $documentType = $_POST['documentType'];
+        $documentNumber = $_POST['documentNumber'];
+        $password = $_POST['password'];
 
-                // Consulta para validar al usuario
-                $sql = "SELECT * FROM usuarios WHERE documentType = ? AND documentNumber = ? AND password = ?";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("sss", $documentType, $documentNumber, $password);
-                $stmt->execute();
-                $result = $stmt->get_result();
+        // Consulta para validar al usuario y obtener su rol
+        $sql = "SELECT usuarios.*, roles.nombre AS role FROM usuarios 
+                JOIN roles ON usuarios.role_id = roles.id 
+                WHERE documentType = ? AND documentNumber = ? AND password = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sss", $documentType, $documentNumber, $password);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-                if ($result->num_rows > 0) {
-                    // Redirigir al usuario a la página Materia
-                    header("Location: ./Paginas/Materia.php");
-                    exit();
-                } else {
-                    echo "<p style='color:red;'>Datos incorrectos</p>";
-                }
+        if ($result->num_rows > 0) {
+            $user = $result->fetch_assoc();
+        
+        // Redirigir al usuario según su rol
+        switch ($user['role']) {
+            case 'Profesor':
+                header("Location: ./Paginas/Profesor.php");
+                break;
+            case 'Alumno':
+                header("Location: ./Paginas/Alumno.php");
+                break;
+            case 'Preceptor':
+                header("Location: ./Paginas/Preceptor.php");
+                break;
+            case 'Director':
+                header("Location: ./Paginas/Director.php");
+                break;
+            default:
+                echo "<p style='color:red;'>Rol no reconocido</p>";
+                break;
+        }
+        exit();
+    } else {
+        echo "<p style='color:red;'>Datos incorrectos</p>";
+    }
 
-                $stmt->close();
-            }
+    $stmt->close();
+}
 
-            $conn->close();
-            ?>
+$conn->close();
+?>
+            
 
             <form method="POST" action="index.php">
                 <label for="documentType">Tipo de Documento:</label>
